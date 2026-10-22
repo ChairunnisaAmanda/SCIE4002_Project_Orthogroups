@@ -22,51 +22,63 @@ grep ">" seq.fas | cut -d'|' -f2 | sort -u
 # Split the file into one FASTA file per species, keeping only the gene ID in each header
 mkdir -p project/WRKY_fastas_final
 
-extract_species () {
-    # $1 = species name in the header, $2 = output file
-    awk -F'|' -v species="$1" '
-        /^>/ {
-            keep = ($2 == species)
-            if (keep) {
-                gene_id = $1
-                sub(/^>/, "", gene_id)
-                print ">" gene_id
-            }
-            next
-        }
-        keep { print }
-    ' seq.fas > "$2"
+# grab the specific sequences that we want to use (rice, maize, sorghum)
+# Oryza_sativa_subsp._indica
+awk -F'|' -v species="Oryza_sativa_subsp._indica" '
+/^>/ {
+    keep = ($2 == species)
+    if (keep) {
+        gene_id = $1
+        sub(/^>/, "", gene_id)
+        print ">" gene_id
+    }
+    next
 }
+keep { print }
+' seq.fas > Oryza_sativa_subsp._indica_WRKY.fasta
 
-extract_species "Oryza_sativa_subsp._indica" project/WRKY_fastas_final/Osativa_indica_WRKY.fasta
-extract_species "Sorghum_bicolor"            project/WRKY_fastas_final/Sbicolor_WRKY.fasta
-extract_species "Zea_mays"                   project/WRKY_fastas_final/Zmays_WRKY.fasta
+# Zea_mays
+awk -F'|' -v species="Zea_mays" '
+/^>/ {
+    keep = ($2 == species)
+    if (keep) {
+        gene_id = $1
+        sub(/^>/, "", gene_id)
+        print ">" gene_id
+    }
+    next
+}
+keep { print }
+' seq.fas > Zea_mays.fasta
 
-# Check the number of sequences per species 
-for f in project/WRKY_fastas_final/*.fasta; do
-    echo "$f: $(grep -c '>' "$f") sequences"
-done
+# Sorghum_bicolor
+awk -F'|' -v species="Sorghum_bicolor" '
+/^>/ {
+    keep = ($2 == species)
+    if (keep) {
+        gene_id = $1
+        sub(/^>/, "", gene_id)
+        print ">" gene_id
+    }
+    next
+}
+keep { print }
+' seq.fas > Sorghum_bicolor.fasta
 
-# Check for duplicated identifiers
-for f in project/WRKY_fastas_final/*.fasta; do
-    grep ">" "$f" | sort | uniq -d
-done
+mkdir -p project/WRKY_fastas_final
+cp project/WRKY_fastas/Osativa_indica_WRKY.fasta project/WRKY_fastas_final/
+cp project/WRKY_fastas/Sbicolor_WRKY.fasta project/WRKY_fastas_final/
+cp project/WRKY_fastas/Zmays_WRKY.fasta project/WRKY_fastas_final/
 
-# Run OrthoFinder
-# 8 threads for sequence searches (-t)
-# 8 for parallel analysis steps (-a)
+grep -c ">" project/WRKY_fastas_final/Osativa_indica_WRKY.fasta
+grep -c ">" project/WRKY_fastas_final/Sbicolor_WRKY.fasta
+grep -c ">" project/WRKY_fastas_final/Zmays_WRKY.fasta
+
+grep ">" project/WRKY_fastas_final/Osativa_indica_WRKY.fasta | sort | uniq -d
+
 cd project/
 orthofinder -f WRKY_fastas_final/ -t 8 -a 8 -o WRKY_results_1
 
-# Inspect the main outputs
-RES=$(echo WRKY_results_1/Results_*)
-tail -50 "$RES/Log.txt"
-ls "$RES/"
-cat "$RES/Orthogroups/Orthogroups.GeneCount.tsv"
-cat "$RES/Comparative_Genomics_Statistics/Duplications_per_Species_Tree_Node.tsv"
-head -20 "$RES/Gene_Duplication_Events/Duplications.tsv"
-cat "$RES/Comparative_Genomics_Statistics/Statistics_Overall.tsv"
-cat "$RES/Comparative_Genomics_Statistics/Statistics_PerSpecies.tsv"
 ```
 
 ### 2. Alignment of orthogroups with MAFFT (by Xin Ho)
