@@ -111,3 +111,4 @@ sbatch --cpus-per-task=8 --wrap="$cmd"
 ```
 
 ## R Script for Figure Making
+Under the folder /FigureMaking along with the inputs
