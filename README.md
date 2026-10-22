@@ -42,18 +42,19 @@ extract_species "Oryza_sativa_subsp._indica" project/WRKY_fastas_final/Osativa_i
 extract_species "Sorghum_bicolor"            project/WRKY_fastas_final/Sbicolor_WRKY.fasta
 extract_species "Zea_mays"                   project/WRKY_fastas_final/Zmays_WRKY.fasta
 
-# Check the number of sequences per species (expected 109, 134 and 161)
+# Check the number of sequences per species 
 for f in project/WRKY_fastas_final/*.fasta; do
     echo "$f: $(grep -c '>' "$f") sequences"
 done
 
-# Check for duplicated identifiers (no output means none)
+# Check for duplicated identifiers
 for f in project/WRKY_fastas_final/*.fasta; do
     grep ">" "$f" | sort | uniq -d
 done
 
-# Run OrthoFinder v2.5.5 with default settings, 8 threads for sequence searches (-t)
-# and 8 for parallel analysis steps (-a)
+# Run OrthoFinder
+# 8 threads for sequence searches (-t)
+# 8 for parallel analysis steps (-a)
 cd project/
 orthofinder -f WRKY_fastas_final/ -t 8 -a 8 -o WRKY_results_1
 
@@ -78,7 +79,7 @@ OUTPUT="/mnt/s-ws/s-29/WRKY_project/analysis/mafft_alignments"
 
 mkdir -p "$OUTPUT"
 
-# Align each orthogroup with MAFFT v7.490
+# Align each orthogroup with MAFFT
 for file in "$INPUT"/OG*.fa; do
     [ -f "$file" ] || continue
     name=$(basename "$file" .fa)
@@ -94,7 +95,7 @@ echo "All MAFFT alignments completed."
 ```bash
 #!/bin/bash
 
-# Align all protein sequences (combined file) with MAFFT v7.490
+# Align all protein sequences with MAFFT v7.490
 mafft --maxiterate 1000 --globalpair allprotein.protein.fa > allprotein.msa
 
 # Infer the tree with IQ-TREE2: 8 threads, 1,000 SH-like approximate likelihood
